@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+*.sqlite*
+node_modules/
+dist/
+build/
+*.egg-info/
+playwright-report/
+test-results/
+var/
