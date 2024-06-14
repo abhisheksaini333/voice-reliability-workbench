@@ -64,7 +64,7 @@ def parse_control(raw):
         raise ProtocolError("control message is too large")
     try:
         message = json.loads(raw)
-    except (ValueError, TypeError) as error:
+    except (ValueError, TypeError, RecursionError) as error:
         raise ProtocolError("invalid control JSON") from error
     if not isinstance(message, dict):
         raise ProtocolError("control must be an object")
@@ -79,11 +79,18 @@ def parse_control(raw):
         "ack": {"epoch", "sequence"},
         "tool": {"service"},
     }
-    if kind not in fields or set(message) != {"type"} | fields[kind]:
+    if (
+        not isinstance(kind, str)
+        or kind not in fields
+        or set(message) != {"type"} | fields[kind]
+    ):
         raise ProtocolError("unknown control or unexpected fields")
     if kind == "ack":
         bounded_integer(message["epoch"], "epoch")
         bounded_integer(message["sequence"], "sequence")
-    if kind == "tool" and message["service"] not in {"atlas", "beacon"}:
+    if kind == "tool" and (
+        not isinstance(message["service"], str)
+        or message["service"] not in {"atlas", "beacon"}
+    ):
         raise ProtocolError("unknown demonstration service")
     return message

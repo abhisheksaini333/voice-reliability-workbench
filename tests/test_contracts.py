@@ -30,6 +30,9 @@ class AudioContractTests(unittest.TestCase):
         )
         for raw in (
             "[]",
+            '{"type":[]}',
+            '{"type":"tool","service":{}}',
+            "[" * 1500 + "]" * 1500,
             '{"type":"start","tenant":"other"}',
             '{"type":"ack","epoch":true,"sequence":0}',
             '{"type":"run_shell"}',
