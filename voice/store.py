@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 import json
 import math
+from pathlib import Path
 import re
 import sqlite3
 import threading
@@ -22,6 +23,7 @@ def redact(text):
 
 class Store:
     def __init__(self, path):
+        self.path = Path(path).resolve()
         self.connection = sqlite3.connect(
             path, timeout=5, check_same_thread=False, isolation_level=None
         )
@@ -233,6 +235,27 @@ class Store:
         for record in records:
             record["timings"] = json.loads(record["timings"])
         return records
+
+    def recover(self, owner):
+        if not owner.held or owner.database != self.path:
+            raise RuntimeError("exclusive workspace ownership required")
+        with self.transaction() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE turns SET state = 'abandoned', error_code = 'process_restart', updated = ?
+                WHERE state = 'running'
+            """,
+                (time.time(),),
+            )
+            count = cursor.rowcount
+            connection.execute(
+                """
+                UPDATE sessions SET epoch = epoch + 1, connected = 0, recording = 0, updated = ?,
+                phase = CASE WHEN phase IN ('closed', 'operator', 'handoff_pending') THEN phase ELSE 'disconnected' END
+            """,
+                (time.time(),),
+            )
+            return count
 
     def close(self):
         with self.lock:

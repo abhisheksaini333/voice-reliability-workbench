@@ -22,6 +22,14 @@ class SessionState:
         self.connected = False
         self.recording = False
 
+    @classmethod
+    def restore(cls, record):
+        state = cls(record["id"])
+        state.connection = record["connection"]
+        state.epoch = record["epoch"]
+        state.phase = record["phase"]
+        return state
+
     def _invalidate(self):
         self.epoch += 1
 
