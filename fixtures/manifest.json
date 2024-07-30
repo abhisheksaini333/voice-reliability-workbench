@@ -1,0 +1,55 @@
+{
+  "origin": "Project-owned text synthesized with eSpeak NG1.51, en-us, 170 words/minute",
+  "audio_format": "PCM16 little endian, mono, 16000Hz",
+  "scope": "Synthetic fixture reliability and WER only; not human speech accuracy",
+  "fixtures": [
+    {
+      "id": "greeting",
+      "file": "greeting.wav",
+      "reference": "Hello, can you help me with a service issue?",
+      "condition": "clean",
+      "duration_ms": 3449.625,
+      "sha256": "18cff9d4d3866dd2dfbe1f86809fd76e5b7ec9295cdddece7ef9c71dc1847661"
+    },
+    {
+      "id": "status",
+      "file": "status.wav",
+      "reference": "Please tell me the status of the Atlas service.",
+      "condition": "clean",
+      "duration_ms": 3486.625,
+      "sha256": "cc2c4a8b7ffdf21634c2f3a84373dff9848b79503fba905427b1b3470766b8a3"
+    },
+    {
+      "id": "status-noise",
+      "file": "status-noise.wav",
+      "reference": "Please tell me the status of the Atlas service.",
+      "condition": "Gaussian noise std0.008, NumPy seed1729",
+      "duration_ms": 3486.625,
+      "sha256": "1edf656d78d4c4a284863b937fc42cb6f07162e56780b53bdacd0a05ba30c0c3"
+    },
+    {
+      "id": "handoff",
+      "file": "handoff.wav",
+      "reference": "I would like to speak with a human operator.",
+      "condition": "clean",
+      "duration_ms": 3198.5625,
+      "sha256": "c20c01ad52b2a92bb4d4ec2b061990867747152967d9d16425ab660c4903709e"
+    },
+    {
+      "id": "interrupt",
+      "file": "interrupt.wav",
+      "reference": "Stop talking. I have another question.",
+      "condition": "clean",
+      "duration_ms": 3475.75,
+      "sha256": "505e888b89b0a05996a53c41bc92083dac84b6466555125d7ee64799d4658b17"
+    },
+    {
+      "id": "numbers",
+      "file": "numbers.wav",
+      "reference": "The ticket number is four two seven. Please repeat it.",
+      "condition": "clean",
+      "duration_ms": 4191.0625,
+      "sha256": "fa100f03968f507fbaeb6b0af8176b5830dfccb9dc49a4ec6ae3a42e660237b7"
+    }
+  ]
+}
