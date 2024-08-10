@@ -41,6 +41,14 @@ class NativeWorker:
         budget = WorkBudget(job.stop, job.started + timeout)
         native = asyncio.create_task(asyncio.to_thread(operation, budget))
         job.task = native
+
+        def release_native_slot(completed):
+            self.completed.append(identity)
+            if self.active is job:
+                self.active = None
+
+        # The native task owns its slot even if its request is cancelled repeatedly.
+        native.add_done_callback(release_native_slot)
         try:
             result = await asyncio.wait_for(asyncio.shield(native), timeout)
             budget.check()
@@ -57,10 +65,6 @@ class NativeWorker:
             raise
         except Exception:
             raise ProviderFailure("provider_failed") from None
-        finally:
-            # Native work is joined in every cancellation/deadline path above.
-            self.completed.append(identity)
-            self.active = None
 
     def cancel(self, identity):
         if self.active is None or self.active.id != identity:

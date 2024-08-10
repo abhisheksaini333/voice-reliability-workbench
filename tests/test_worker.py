@@ -66,3 +66,28 @@ class NativeWorkerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(caught.exception.code, "provider_failed")
         self.assertNotIn("private", str(caught.exception))
         self.assertIsNone(worker.active)
+
+    async def test_repeated_cancellation_cannot_free_a_still_running_native_job(self):
+        worker = NativeWorker()
+        entered, release = threading.Event(), threading.Event()
+
+        def operation(budget):
+            entered.set()
+            release.wait(2)
+            budget.check()
+
+        task = asyncio.create_task(worker.run("repeated", "model", operation, 1))
+        while not entered.is_set():
+            await asyncio.sleep(0.001)
+        task.cancel()
+        await asyncio.sleep(0.01)
+        task.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await task
+        self.assertIsNotNone(worker.active)
+        release.set()
+        for _ in range(100):
+            if worker.active is None:
+                break
+            await asyncio.sleep(0.005)
+        self.assertIsNone(worker.active)
