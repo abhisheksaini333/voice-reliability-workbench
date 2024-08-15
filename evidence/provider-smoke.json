@@ -1,0 +1,21 @@
+{
+  "transcribe": {
+    "text": "Please tell me must have something at the service.",
+    "generated_tokens": 13,
+    "latency_ms": 1743.6659580562264
+  },
+  "respond": {
+    "text": "Yes, you need to bring something for service.",
+    "input_tokens": 67,
+    "output_tokens": 11,
+    "latency_ms": 4104.840541025624
+  },
+  "synthesize": {
+    "sample_rate": 22050,
+    "duration_ms": 2898.503401360544,
+    "pcm_bytes": 127824
+  },
+  "elapsed_ms": 6008.931041928008,
+  "reference": "Please tell me the status of the Atlas service.",
+  "providers": "actual local Whisper, original Qwen2 and eSpeak NG over authenticated HTTP"
+}
