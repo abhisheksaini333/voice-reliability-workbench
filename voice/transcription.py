@@ -39,6 +39,8 @@ class WhisperRecognizer:
             def __call__(self, input_ids, scores, **kwargs):
                 return budget.expired()
 
+        # OpenMP limits must be applied in the actual inference worker thread.
+        torch.set_num_threads(2)
         started = time.monotonic()
         samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768
         features = self.processor(

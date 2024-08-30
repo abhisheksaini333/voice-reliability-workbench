@@ -52,6 +52,8 @@ class QwenResponder:
             def __call__(self, input_ids, scores, **kwargs):
                 return budget.expired()
 
+        # OpenMP limits must be applied in the actual inference worker thread.
+        torch.set_num_threads(2)
         started = time.monotonic()
         prompt = self.tokenizer.apply_chat_template(
             [{"role": "system", "content": SYSTEM}]
