@@ -105,6 +105,7 @@ class SessionState:
     def accept_handoff(self, expected_epoch):
         if self.phase != "handoff_pending" or self.epoch != expected_epoch:
             raise StateError("handoff changed or was already accepted")
+        self._invalidate()
         self.phase = "operator"
 
     def close(self):

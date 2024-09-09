@@ -39,6 +39,10 @@ class Store:
                 updated REAL NOT NULL, phase TEXT NOT NULL, epoch INTEGER NOT NULL,
                 connection INTEGER NOT NULL, connected INTEGER NOT NULL, recording INTEGER NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL REFERENCES sessions(id),
+                epoch INTEGER NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL, created REAL NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS turns (
                 session_id TEXT NOT NULL REFERENCES sessions(id), epoch INTEGER NOT NULL,
                 connection INTEGER NOT NULL, state TEXT NOT NULL, created REAL NOT NULL,
@@ -182,6 +186,76 @@ class Store:
                 ),
             )
             return cursor.rowcount == 1
+
+    def draft_reply(self, identity, text):
+        text = redact(text)
+        with self.transaction() as connection:
+            if not self._current(connection, identity):
+                return False
+            result = connection.execute(
+                """UPDATE turns SET reply = ?, updated = ?
+                WHERE session_id = ? AND epoch = ? AND connection = ? AND state = 'running'""",
+                (
+                    text,
+                    time.time(),
+                    identity.session_id,
+                    identity.epoch,
+                    identity.connection,
+                ),
+            )
+            return result.rowcount == 1
+
+    def event(self, session_id, epoch, kind, detail):
+        if not isinstance(kind, str) or not re.fullmatch(r"[a-z_]{1,40}", kind):
+            raise ValueError("safe event kind required")
+        if not isinstance(detail, dict) or len(detail) > 12:
+            raise ValueError("bounded flat event detail required")
+        cleaned = {}
+        for key, value in detail.items():
+            if not isinstance(key, str) or not re.fullmatch(r"[a-z_]{1,40}", key):
+                raise ValueError("safe event field required")
+            if isinstance(value, str):
+                cleaned[key] = redact(value)
+            elif value is None or type(value) in (bool, int, float):
+                if type(value) in (int, float) and (
+                    not math.isfinite(value) or abs(value) > 1e15
+                ):
+                    raise ValueError("bounded event number required")
+                cleaned[key] = value
+            else:
+                raise ValueError("flat event fields required")
+        encoded = json.dumps(cleaned)
+        if len(encoded) > 4096:
+            raise ValueError("event detail too large")
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT epoch FROM sessions WHERE id = ?", (session_id,)
+            ).fetchone()
+            if row is None or row[0] != epoch:
+                return False
+            connection.execute(
+                "INSERT INTO events(session_id, epoch, kind, detail, created) VALUES(?, ?, ?, ?, ?)",
+                (session_id, epoch, kind, encoded, time.time()),
+            )
+            connection.execute(
+                """DELETE FROM events WHERE session_id = ? AND id NOT IN
+                (SELECT id FROM events WHERE session_id = ? ORDER BY id DESC LIMIT 1000)""",
+                (session_id, session_id),
+            )
+            return True
+
+    def events(self, session_id):
+        with self.lock:
+            result = [
+                dict(row)
+                for row in self.connection.execute(
+                    "SELECT * FROM events WHERE session_id = ? ORDER BY id LIMIT 1000",
+                    (session_id,),
+                )
+            ]
+        for row in result:
+            row["detail"] = json.loads(row["detail"])
+        return result
 
     def complete(self, identity, reply, timings, *, error_code=None):
         reply = redact(reply)
