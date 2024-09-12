@@ -78,6 +78,9 @@ def parse_control(raw):
         "ping": set(),
         "ack": {"epoch", "sequence"},
         "tool": {"service"},
+        "playback_started": {"epoch"},
+        "playback_stopped": {"epoch"},
+        "fault": {"stage"},
     }
     if (
         not isinstance(kind, str)
@@ -88,6 +91,13 @@ def parse_control(raw):
     if kind == "ack":
         bounded_integer(message["epoch"], "epoch")
         bounded_integer(message["sequence"], "sequence")
+    if kind in ("playback_started", "playback_stopped"):
+        bounded_integer(message["epoch"], "epoch")
+    if kind == "fault" and (
+        not isinstance(message["stage"], str)
+        or message["stage"] not in ("none", "stt", "model", "tts", "tool")
+    ):
+        raise ProtocolError("unknown diagnostic fault")
     if kind == "tool" and (
         not isinstance(message["service"], str)
         or message["service"] not in {"atlas", "beacon"}
