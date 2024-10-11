@@ -1,9 +1,9 @@
-import { PCMFramer } from './pcm.js';
+import { PCMFramer } from "./pcm.js";
 class VoiceCapture extends AudioWorkletProcessor {
   constructor() {
     super();
-    this.framer = new PCMFramer(sampleRate, pcm => {
-      this.port.postMessage({pcm}, [pcm]);
+    this.framer = new PCMFramer(sampleRate, (pcm) => {
+      this.port.postMessage({ pcm }, [pcm]);
     });
   }
   process(inputs) {
@@ -12,4 +12,4 @@ class VoiceCapture extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('voice-capture', VoiceCapture);
+registerProcessor("voice-capture", VoiceCapture);
