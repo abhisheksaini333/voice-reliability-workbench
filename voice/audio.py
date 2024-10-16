@@ -36,7 +36,7 @@ class VoiceDetector:
             or min(attack_frames, silence_frames, preroll_frames) < 1
         ):
             raise ValueError("positive VAD bounds required")
-        if not attack_frames <= preroll_frames <= max_frames <= 1500:
+        if not attack_frames <= preroll_frames < max_frames <= 1500:
             raise ValueError("invalid VAD buffering bounds")
         self.threshold = threshold
         self.attack_frames = attack_frames

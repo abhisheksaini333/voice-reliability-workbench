@@ -50,3 +50,7 @@ class VoiceDetectionTests(unittest.TestCase):
             detector.feed(frame(index, 9000))
         self.assertEqual(len(detector.flush().pcm), 4 * 640)
         self.assertIsNone(detector.flush())
+
+    def test_preroll_cannot_consume_entire_utterance_capacity(self):
+        with self.assertRaises(ValueError):
+            VoiceDetector(preroll_frames=3, max_frames=3)

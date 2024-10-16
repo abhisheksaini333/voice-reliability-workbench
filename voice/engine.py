@@ -46,8 +46,15 @@ class SessionEngine:
             self.healthy = False
             raise
 
+    async def publish(self, event):
+        try:
+            await self.emit(event)
+            return True
+        except SlowConsumer:
+            return False
+
     async def snapshot(self):
-        await self.emit(dict(type="state", **self.state.snapshot()))
+        await self.publish(dict(type="state", **self.state.snapshot()))
 
     def event(self, kind, **detail):
         self.store.event(self.state.session_id, self.state.epoch, kind, detail)
@@ -69,7 +76,7 @@ class SessionEngine:
         self.persist()
         await self.playback.reset(self.state.epoch)
         self.interrupted_at = time.monotonic()
-        await self.emit(dict(type="stop_audio", epoch=self.state.epoch))
+        await self.publish(dict(type="stop_audio", epoch=self.state.epoch))
         await self.snapshot()
         await self._cancel_work()
 
@@ -150,6 +157,7 @@ class SessionEngine:
         if stage.endswith("_start"):
             self.state.advance(frame.identity, "thinking")
             self.persist()
+            await self.snapshot()
         elif stage == "stt":
             if not self.store.transcribe(frame.identity, frame.transcript):
                 raise asyncio.CancelledError
@@ -249,8 +257,8 @@ class SessionEngine:
             self.healthy = False
             self.state.stop()
             await self.playback.reset(self.state.epoch)
-            await self.emit(dict(type="stop_audio", epoch=self.state.epoch))
-            await self.emit(dict(type="error", code="workspace_unavailable"))
+            await self.publish(dict(type="stop_audio", epoch=self.state.epoch))
+            await self.publish(dict(type="error", code="workspace_unavailable"))
 
     async def _fail(self, frame, code):
         if not self.state.current(frame.identity):
@@ -261,15 +269,16 @@ class SessionEngine:
             )
             self.state.interrupt()
             self.persist()
-            await self.playback.reset(self.state.epoch)
-            await self.emit(dict(type="stop_audio", epoch=self.state.epoch))
             self.event("failed", code=code)
-            await self.emit(dict(type="error", code=code))
-            await self.snapshot()
         except Exception:
             self.healthy = False
             self.state.stop()
-            await self.emit(dict(type="error", code="workspace_unavailable"))
+            code = "workspace_unavailable"
+        finally:
+            await self.playback.reset(self.state.epoch)
+        await self.publish(dict(type="stop_audio", epoch=self.state.epoch))
+        await self.publish(dict(type="error", code=code))
+        await self.snapshot()
 
     async def interrupt(self):
         self.state.interrupt()

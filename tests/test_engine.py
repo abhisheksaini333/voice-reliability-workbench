@@ -91,3 +91,34 @@ class EngineTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.engine.state.phase, "operator")
         with self.assertRaises(ValueError):
             await self.engine.accept_handoff(epoch)
+
+    async def test_closed_listener_does_not_poison_workspace_storage_health(self):
+        from voice.playback import SlowConsumer
+
+        async def closed(event):
+            raise SlowConsumer("listener is gone")
+
+        await self.engine.begin_speech()
+        self.engine.emit = closed
+        await self.engine.utterance(bytes(640))
+        self.assertTrue(self.engine.healthy)
+        self.assertEqual(self.store.turns("session")[0]["state"], "failed")
+
+    async def test_slow_listener_receives_at_most_four_chunks_before_failure(self):
+        from voice.provider_contracts import SpeechAudio
+
+        async def long_speech(*args, **kwargs):
+            return SpeechAudio(bytes(22050 * 2 * 2), 22050)
+
+        self.engine.providers.synthesize = long_speech
+        self.engine.playback.timeout = 0.03
+
+        async def no_ack(event):
+            self.events.append(event)
+
+        self.engine.emit = no_ack
+        await self.engine.begin_speech()
+        await self.engine.utterance(bytes(640))
+        self.assertEqual(len([e for e in self.events if e["type"] == "audio"]), 4)
+        self.assertEqual(self.store.turns("session")[0]["error_code"], "slow_listener")
+        self.assertTrue(self.engine.healthy)
