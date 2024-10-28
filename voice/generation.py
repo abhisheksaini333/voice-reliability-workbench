@@ -1,6 +1,7 @@
 """Original Qwen2 CPU responses with bounded context and cooperative stopping."""
 import time
 from .artifacts import manifest, verify_model
+from .cpu import configure_cpu
 from .provider_contracts import ProviderFailure
 
 SYSTEM = (
@@ -22,7 +23,7 @@ class QwenResponder:
         from transformers import AutoTokenizer, AutoModelForCausalLM
 
         verify_model(path, manifest("qwen"))
-        torch.set_num_threads(2)
+        configure_cpu(torch)
         tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
         model = AutoModelForCausalLM.from_pretrained(
             path, local_files_only=True, torch_dtype=torch.float32
@@ -53,7 +54,7 @@ class QwenResponder:
                 return budget.expired()
 
         # OpenMP limits must be applied in the actual inference worker thread.
-        torch.set_num_threads(2)
+        configure_cpu(torch)
         started = time.monotonic()
         prompt = self.tokenizer.apply_chat_template(
             [{"role": "system", "content": SYSTEM}]

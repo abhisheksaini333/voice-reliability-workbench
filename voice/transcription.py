@@ -1,6 +1,7 @@
 """Actual local Whisper transcription of bounded mono 16kHz PCM."""
 import time
 from .artifacts import manifest, verify_model
+from .cpu import configure_cpu
 from .provider_contracts import ProviderFailure
 
 
@@ -15,7 +16,7 @@ class WhisperRecognizer:
         from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 
         verify_model(path, manifest("whisper"))
-        torch.set_num_threads(2)
+        configure_cpu(torch)
         processor = AutoProcessor.from_pretrained(path, local_files_only=True)
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             path, local_files_only=True, torch_dtype=torch.float32
@@ -40,7 +41,7 @@ class WhisperRecognizer:
                 return budget.expired()
 
         # OpenMP limits must be applied in the actual inference worker thread.
-        torch.set_num_threads(2)
+        configure_cpu(torch)
         started = time.monotonic()
         samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768
         features = self.processor(
