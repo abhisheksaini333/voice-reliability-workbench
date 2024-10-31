@@ -1,0 +1,136 @@
+{
+  "scope": "Actual authenticated CPU provider HTTP; disclosed synthetic eSpeak fixtures; no browser or carrier measurement in this report.",
+  "models": {
+    "stt": "Whisper tiny.en 87c7102498dcde7456f24cfd30239ca606ed9063",
+    "model": "Qwen2-0.5B-Instruct c291d6fce4804a1d39305f388dd32897d1f7acc4",
+    "tts": "eSpeak NG1.51"
+  },
+  "hardware": {
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "logical_cpus": 11,
+    "torch_threads": 2
+  },
+  "fixtures": [
+    {
+      "fixture": "greeting",
+      "reference": "Hello, can you help me with a service issue?",
+      "observed": "Hello, can you help me with a service issue?",
+      "word_error": {
+        "reference_words": 9,
+        "hypothesis_words": 9,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0
+      },
+      "response": "Of course! Please describe your problem and I'll assist you.",
+      "stt_ms": 288.3051249664277,
+      "model_ms": 2360.2583340834826,
+      "generated_tokens": 14,
+      "synthesized_audio_ms": 3748.8888888888887,
+      "total_ms": 2738.4202911052853,
+      "fixture_sha256": "18cff9d4d3866dd2dfbe1f86809fd76e5b7ec9295cdddece7ef9c71dc1847661"
+    },
+    {
+      "fixture": "status",
+      "reference": "Please tell me the status of the Atlas service.",
+      "observed": "Please tell me must have something at the service.",
+      "word_error": {
+        "reference_words": 9,
+        "hypothesis_words": 9,
+        "substitutions": 5,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.5555555555555556
+      },
+      "response": "Yes, you need to bring something for service.",
+      "stt_ms": 283.5820419713855,
+      "model_ms": 1258.0453751143068,
+      "generated_tokens": 11,
+      "synthesized_audio_ms": 2898.503401360544,
+      "total_ms": 1589.4537919666618,
+      "fixture_sha256": "cc2c4a8b7ffdf21634c2f3a84373dff9848b79503fba905427b1b3470766b8a3"
+    },
+    {
+      "fixture": "status-noise",
+      "reference": "Please tell me the status of the Atlas service.",
+      "observed": "Please tell me must have a Sunday Atlas service.",
+      "word_error": {
+        "reference_words": 9,
+        "hypothesis_words": 9,
+        "substitutions": 4,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.4444444444444444
+      },
+      "response": "Yes, it's essential for the Sunday Atlas service.",
+      "stt_ms": 311.08074984513223,
+      "model_ms": 719.7237911168486,
+      "generated_tokens": 12,
+      "synthesized_audio_ms": 3134.331065759637,
+      "total_ms": 1066.5349999908358,
+      "fixture_sha256": "1edf656d78d4c4a284863b937fc42cb6f07162e56780b53bdacd0a05ba30c0c3"
+    },
+    {
+      "fixture": "handoff",
+      "reference": "I would like to speak with a human operator.",
+      "observed": "I would like to speak with a human heart forever.",
+      "word_error": {
+        "reference_words": 9,
+        "hypothesis_words": 10,
+        "substitutions": 1,
+        "deletions": 0,
+        "insertions": 1,
+        "wer": 0.2222222222222222
+      },
+      "response": "Please call 1-800-273-TALK (8255) for assistance.",
+      "stt_ms": 252.48604197986424,
+      "model_ms": 1294.309209100902,
+      "generated_tokens": 24,
+      "synthesized_audio_ms": 7286.621315192744,
+      "total_ms": 1608.4587080404162,
+      "fixture_sha256": "c20c01ad52b2a92bb4d4ec2b061990867747152967d9d16425ab660c4903709e"
+    },
+    {
+      "fixture": "interrupt",
+      "reference": "Stop talking. I have another question.",
+      "observed": "Stop talking. I have another question.",
+      "word_error": {
+        "reference_words": 6,
+        "hypothesis_words": 6,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0
+      },
+      "response": "I'm sorry, but I can't assist with that.",
+      "stt_ms": 300.3215838689357,
+      "model_ms": 974.8274160083383,
+      "generated_tokens": 13,
+      "synthesized_audio_ms": 2646.848072562358,
+      "total_ms": 1309.1570411343127,
+      "fixture_sha256": "505e888b89b0a05996a53c41bc92083dac84b6466555125d7ee64799d4658b17"
+    },
+    {
+      "fixture": "numbers",
+      "reference": "The ticket number is four two seven. Please repeat it.",
+      "observed": "But it could tumber is 427. Please repeat it.",
+      "word_error": {
+        "reference_words": 10,
+        "hypothesis_words": 9,
+        "substitutions": 6,
+        "deletions": 1,
+        "insertions": 0,
+        "wer": 0.7
+      },
+      "response": "It's currently 427.",
+      "stt_ms": 284.57675012759864,
+      "model_ms": 2773.3559999614954,
+      "generated_tokens": 9,
+      "synthesized_audio_ms": 2614.739229024943,
+      "total_ms": 3086.1067089717835,
+      "fixture_sha256": "fa100f03968f507fbaeb6b0af8176b5830dfccb9dc49a4ec6ae3a42e660237b7"
+    }
+  ]
+}
