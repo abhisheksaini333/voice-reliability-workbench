@@ -135,6 +135,7 @@ export function App() {
 
   function connect(current: Session) {
     stopMedia();
+    setDraft({ transcript: "", reply: "" });
     socket.current?.close();
     setState(initial);
     setStage("");
@@ -164,6 +165,7 @@ export function App() {
             playback.current.reset(event.epoch);
           refresh();
         } else if (event.type === "stop_audio") {
+          setDraft({ transcript: "", reply: "" });
           epoch.current = event.epoch;
           playback.current?.reset(event.epoch);
           send({ type: "playback_stopped", epoch: event.epoch });
@@ -192,6 +194,7 @@ export function App() {
           );
           refresh();
         } else if (event.type === "error") {
+          setDraft({ transcript: "", reply: "" });
           setMessage(event.code);
           refresh();
         }

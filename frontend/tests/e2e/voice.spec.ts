@@ -106,6 +106,9 @@ test("interruption flushes actual scheduled speech and reconnect requires consen
   await expect(
     page.getByRole("button", { name: "Start microphone" })
   ).toBeEnabled();
+  await expect(
+    page.getByText("CURRENT TURN", { exact: true })
+  ).not.toBeVisible();
   const detail = await record(page, identity);
   expect(detail.session.recording).toBe(0);
   expect(detail.session.connection).toBeGreaterThan(1);
