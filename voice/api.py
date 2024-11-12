@@ -411,6 +411,7 @@ def main():
     args = parser.parse_args()
     logger.remove()
     logger.add(lambda message: None, level="WARNING")
+    os.umask(0o077)
     database = Path(os.environ.get("VOICE_DATABASE", "voice.sqlite"))
     database.parent.mkdir(parents=True, exist_ok=True)
     app = create_app(
