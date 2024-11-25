@@ -123,3 +123,24 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await second.receive_json())["type"], "pong")
         await second.close()
         await first.close()
+
+    async def test_unpaced_audio_burst_is_closed_at_bounded_input_queue(self):
+        from voice.contracts import AudioFrame
+
+        ws = await self.client.ws_connect(
+            "/api/sessions/" + self.session["id"] + "/audio"
+        )
+        await ws.send_json({"type": "authenticate", "token": self.session["token"]})
+        await ws.receive_json()
+        await ws.send_json({"type": "start"})
+        await ws.receive_json()
+        for sequence in range(200):
+            try:
+                await ws.send_bytes(
+                    AudioFrame(sequence, sequence * 320, bytes(640)).encode()
+                )
+            except ConnectionResetError:
+                break
+        message = await asyncio.wait_for(ws.receive(), 2)
+        self.assertEqual(message.type.name, "CLOSE")
+        self.assertEqual(message.data, 1013)

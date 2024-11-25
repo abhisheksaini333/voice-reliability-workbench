@@ -1,0 +1,9 @@
+{
+  "kill_during": "live VAD capture before utterance end",
+  "recovered_state": "abandoned",
+  "error_code": "process_restart",
+  "requires_fresh_consent": true,
+  "duplicate_turns": 0,
+  "verified_online_backup": true,
+  "provider_inference": false
+}
