@@ -35,6 +35,7 @@ class SessionEngine:
         self.frame = None
         self.utterance_ended = None
         self.interrupted_at = None
+        self.connection_lock = asyncio.Lock()
 
     def persist(self):
         if not self.healthy:
@@ -81,15 +82,16 @@ class SessionEngine:
         await self._cancel_work()
 
     async def connect(self, emit):
-        # Invalidate first, tell any old browser to stop, then replace the sender.
-        self.state.connect()
-        await self._flush()
-        self.emit = emit
-        self.detector = VoiceDetector()
-        self.sequence = AudioSequence()
-        self.event("connected", connection=self.state.connection)
-        await self.snapshot()
-        return self.state.connection
+        async with self.connection_lock:
+            # Invalidate first, tell any old browser to stop, then replace the sender.
+            self.state.connect()
+            await self._flush()
+            self.emit = emit
+            self.detector = VoiceDetector()
+            self.sequence = AudioSequence()
+            self.event("connected", connection=self.state.connection)
+            await self.snapshot()
+            return self.state.connection
 
     async def start(self):
         if not self.healthy:
@@ -308,17 +310,18 @@ class SessionEngine:
         self.event("closed")
 
     async def disconnect(self, connection):
-        if connection != self.state.connection:
-            return
-        self.emit = discard
-        self.state.disconnect()
-        try:
-            if self.healthy:
-                self.persist()
-                self.event("disconnected")
-        finally:
-            await self.playback.reset(self.state.epoch)
-            await self._cancel_work()
+        async with self.connection_lock:
+            if connection != self.state.connection:
+                return
+            self.emit = discard
+            self.state.disconnect()
+            try:
+                if self.healthy:
+                    self.persist()
+                    self.event("disconnected")
+            finally:
+                await self.playback.reset(self.state.epoch)
+                await self._cancel_work()
 
     def set_fault(self, stage):
         if not self.allow_faults or stage not in (

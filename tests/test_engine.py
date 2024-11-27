@@ -122,3 +122,29 @@ class EngineTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len([e for e in self.events if e["type"] == "audio"]), 4)
         self.assertEqual(self.store.turns("session")[0]["error_code"], "slow_listener")
         self.assertTrue(self.engine.healthy)
+
+    async def test_concurrent_reconnects_receive_distinct_connection_generations(self):
+        started = asyncio.Event()
+
+        async def slow(*args, **kwargs):
+            started.set()
+            try:
+                await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                await asyncio.sleep(0.03)
+                raise
+
+        self.engine.providers.respond = slow
+        await self.engine.begin_speech()
+        self.engine.utterance(bytes(640))
+        await started.wait()
+
+        async def emit(event):
+            pass
+
+        first, second = await asyncio.gather(
+            self.engine.connect(emit), self.engine.connect(emit)
+        )
+        self.assertNotEqual(first, second)
+        await self.engine.disconnect(min(first, second))
+        self.assertTrue(self.engine.state.connected)
