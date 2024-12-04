@@ -1,0 +1,458 @@
+{
+  "scope": "Actual native macOS Chrome fake-microphone fixture through AudioWorklet, live WebSocket, actual Pipecat/Whisper/Qwen/eSpeak and scheduled browser playback. Not a human-recorded or acoustic listening test.",
+  "browser_fixture": "greeting.wav",
+  "hardware": "Apple M3 Pro,11 logical CPUs,18GiB; CPU model worker2threads",
+  "cases": {
+    "completed_handoff": {
+      "final_state": {
+        "phase": "closed",
+        "epoch": 7,
+        "connection": 1,
+        "recording": 0
+      },
+      "turns": [
+        {
+          "epoch": 2,
+          "state": "completed",
+          "transcript": "Hello, can you help me with a service issue?",
+          "reply": "Of course! Please describe your problem and I'll assist you.",
+          "timings": {
+            "stt_ms": 604.0914170444012,
+            "model_ms": 3542.8591249510646,
+            "tts_ms": 277.6520000770688,
+            "first_audio_ms": 4461.769124958664,
+            "total_ms": 8211.476542055607
+          },
+          "error_code": null
+        }
+      ],
+      "events": [
+        {
+          "epoch": 1,
+          "kind": "connected",
+          "detail": {
+            "connection": 1
+          },
+          "relative_ms": 0.0
+        },
+        {
+          "epoch": 1,
+          "kind": "recording_started",
+          "detail": {},
+          "relative_ms": 372.27511405944824
+        },
+        {
+          "epoch": 2,
+          "kind": "speech_started",
+          "detail": {},
+          "relative_ms": 714.9300575256348
+        },
+        {
+          "epoch": 2,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 0.8718329481780529
+          },
+          "relative_ms": 715.6031131744385
+        },
+        {
+          "epoch": 2,
+          "kind": "utterance",
+          "detail": {
+            "capture_start_ms": 120.0,
+            "capture_end_ms": 3080.0,
+            "truncated": false
+          },
+          "relative_ms": 3483.1340312957764
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "stt_start"
+          },
+          "relative_ms": 3484.624147415161
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "stt"
+          },
+          "relative_ms": 4089.398145675659
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "model_start"
+          },
+          "relative_ms": 4089.7111892700195
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "model"
+          },
+          "relative_ms": 7634.8700523376465
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "tts_start"
+          },
+          "relative_ms": 7635.387182235718
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "tts"
+          },
+          "relative_ms": 7913.328170776367
+        },
+        {
+          "epoch": 2,
+          "kind": "playback_started",
+          "detail": {
+            "first_audio_ms": 4461.769124958664
+          },
+          "relative_ms": 7945.672988891602
+        },
+        {
+          "epoch": 3,
+          "kind": "recording_stopped",
+          "detail": {},
+          "relative_ms": 12195.526361465454
+        },
+        {
+          "epoch": 3,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 13.12849996611476
+          },
+          "relative_ms": 12208.699226379395
+        },
+        {
+          "epoch": 4,
+          "kind": "handoff_requested",
+          "detail": {},
+          "relative_ms": 12360.722303390503
+        },
+        {
+          "epoch": 4,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 14.68079094775021
+          },
+          "relative_ms": 12375.489234924316
+        },
+        {
+          "epoch": 5,
+          "kind": "handoff_accepted",
+          "detail": {},
+          "relative_ms": 12753.803014755249
+        },
+        {
+          "epoch": 5,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 5.296625196933746
+          },
+          "relative_ms": 12758.991241455078
+        },
+        {
+          "epoch": 6,
+          "kind": "closed",
+          "detail": {},
+          "relative_ms": 12863.619089126587
+        },
+        {
+          "epoch": 6,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 13.586959103122354
+          },
+          "relative_ms": 12877.133131027222
+        },
+        {
+          "epoch": 7,
+          "kind": "disconnected",
+          "detail": {},
+          "relative_ms": 12899.415254592896
+        }
+      ]
+    },
+    "interruption_reconnect": {
+      "final_state": {
+        "phase": "disconnected",
+        "epoch": 6,
+        "connection": 2,
+        "recording": 0
+      },
+      "turns": [
+        {
+          "epoch": 2,
+          "state": "cancelled",
+          "transcript": "Hello, can you help me with a service issue?",
+          "reply": "Of course! Please describe your problem and I'll assist you.",
+          "timings": {},
+          "error_code": "superseded"
+        }
+      ],
+      "events": [
+        {
+          "epoch": 1,
+          "kind": "connected",
+          "detail": {
+            "connection": 1
+          },
+          "relative_ms": 0.0
+        },
+        {
+          "epoch": 1,
+          "kind": "recording_started",
+          "detail": {},
+          "relative_ms": 348.6039638519287
+        },
+        {
+          "epoch": 2,
+          "kind": "speech_started",
+          "detail": {},
+          "relative_ms": 684.473991394043
+        },
+        {
+          "epoch": 2,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 0.9935840498656034
+          },
+          "relative_ms": 685.3351593017578
+        },
+        {
+          "epoch": 2,
+          "kind": "utterance",
+          "detail": {
+            "capture_start_ms": 100.0,
+            "capture_end_ms": 3080.0,
+            "truncated": false
+          },
+          "relative_ms": 3466.660976409912
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "stt_start"
+          },
+          "relative_ms": 3467.967987060547
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "stt"
+          },
+          "relative_ms": 3903.03111076355
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "model_start"
+          },
+          "relative_ms": 3903.5019874572754
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "model"
+          },
+          "relative_ms": 6107.717990875244
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "tts_start"
+          },
+          "relative_ms": 6108.083963394165
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "tts"
+          },
+          "relative_ms": 6364.419937133789
+        },
+        {
+          "epoch": 2,
+          "kind": "playback_started",
+          "detail": {
+            "first_audio_ms": 2924.2691250983626
+          },
+          "relative_ms": 6391.4220333099365
+        },
+        {
+          "epoch": 3,
+          "kind": "interrupted",
+          "detail": {},
+          "relative_ms": 7166.908025741577
+        },
+        {
+          "epoch": 3,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 13.813584111630917
+          },
+          "relative_ms": 7180.555105209351
+        },
+        {
+          "epoch": 4,
+          "kind": "disconnected",
+          "detail": {},
+          "relative_ms": 7218.957901000977
+        },
+        {
+          "epoch": 5,
+          "kind": "connected",
+          "detail": {
+            "connection": 2
+          },
+          "relative_ms": 7232.087850570679
+        },
+        {
+          "epoch": 6,
+          "kind": "disconnected",
+          "detail": {},
+          "relative_ms": 7468.919038772583
+        }
+      ]
+    },
+    "provider_timeout": {
+      "final_state": {
+        "phase": "disconnected",
+        "epoch": 5,
+        "connection": 1,
+        "recording": 0
+      },
+      "turns": [
+        {
+          "epoch": 2,
+          "state": "failed",
+          "transcript": "Hello, can you help me with a service issue?",
+          "reply": "",
+          "timings": {
+            "stt_ms": 405.4550000000745
+          },
+          "error_code": "provider_timeout"
+        }
+      ],
+      "events": [
+        {
+          "epoch": 1,
+          "kind": "connected",
+          "detail": {
+            "connection": 1
+          },
+          "relative_ms": 0.0
+        },
+        {
+          "epoch": 1,
+          "kind": "fault_selected",
+          "detail": {
+            "stage": "model"
+          },
+          "relative_ms": 73.96626472473145
+        },
+        {
+          "epoch": 1,
+          "kind": "recording_started",
+          "detail": {},
+          "relative_ms": 176.97596549987793
+        },
+        {
+          "epoch": 2,
+          "kind": "speech_started",
+          "detail": {},
+          "relative_ms": 516.7109966278076
+        },
+        {
+          "epoch": 2,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 1.1569580528885126
+          },
+          "relative_ms": 517.7218914031982
+        },
+        {
+          "epoch": 2,
+          "kind": "utterance",
+          "detail": {
+            "capture_start_ms": 120.0,
+            "capture_end_ms": 3080.0,
+            "truncated": false
+          },
+          "relative_ms": 3282.499074935913
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "stt_start"
+          },
+          "relative_ms": 3283.0379009246826
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "stt"
+          },
+          "relative_ms": 3688.814163208008
+        },
+        {
+          "epoch": 2,
+          "kind": "stage",
+          "detail": {
+            "stage": "model_start"
+          },
+          "relative_ms": 3689.1069412231445
+        },
+        {
+          "epoch": 3,
+          "kind": "failed",
+          "detail": {
+            "code": "provider_timeout"
+          },
+          "relative_ms": 3842.529058456421
+        },
+        {
+          "epoch": 4,
+          "kind": "recording_stopped",
+          "detail": {},
+          "relative_ms": 4014.601945877075
+        },
+        {
+          "epoch": 4,
+          "kind": "playback_stopped",
+          "detail": {
+            "interruption_ms": 10.637999977916479
+          },
+          "relative_ms": 4025.347948074341
+        },
+        {
+          "epoch": 5,
+          "kind": "disconnected",
+          "detail": {},
+          "relative_ms": 4028.1009674072266
+        }
+      ]
+    }
+  },
+  "harness_note": "First full-journey attempt failed a text locator after successful playback; corrected locator rerun passed. Interruption/reconnect and timeout passed in first run."
+}

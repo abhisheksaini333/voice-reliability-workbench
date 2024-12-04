@@ -1,0 +1,26 @@
+name: Verify voice reliability
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7
+        with:
+          platforms: arm64
+          image: tonistiigi/binfmt:qemu-v7.0.0@sha256:66e11bea77a5ea9d6f0fe79b57cd2b189b5d15b93a2bdb925be22949232e4e55
+      - name: Build the audited frontend and check consent/playback behavior
+        run: |
+          docker build --platform linux/arm64 --target frontend -t voice-frontend-ci .
+          docker run --rm --platform linux/arm64 voice-frontend-ci npm test
+      - name: Build the complete source image
+        run: docker build --platform linux/arm64 --target workbench -t voice-workbench-ci .
+      - name: Verify state, transport, failure handling and actual Pipecat composition
+        run: |
+          docker run --rm --platform linux/arm64 -v "$PWD:/source:ro" -w /source -e PYTHONPATH=/source voice-workbench-ci python -m unittest discover -s tests -q
+      - name: Verify process-kill recovery through live HTTP
+        run: |
+          docker run --rm --platform linux/arm64 -v "$PWD:/source:ro" -w /source -e PYTHONPATH=/source voice-workbench-ci python scripts/check_recovery.py --output /tmp/recovery.json
