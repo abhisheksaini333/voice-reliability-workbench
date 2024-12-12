@@ -144,3 +144,52 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
         message = await asyncio.wait_for(ws.receive(), 2)
         self.assertEqual(message.type.name, "CLOSE")
         self.assertEqual(message.data, 1013)
+
+    async def test_pending_authentication_reserves_capacity_and_releases_on_failure(
+        self,
+    ):
+        import aiohttp
+
+        identities = []
+        for _ in range(5):
+            response = await self.client.post(
+                "/api/sessions", headers={"Authorization": "Bearer " + "w" * 40}
+            )
+            identities.append(await response.json())
+        sockets = [
+            await self.client.ws_connect("/api/sessions/" + item["id"] + "/audio")
+            for item in identities[:4]
+        ]
+        with self.assertRaises(aiohttp.WSServerHandshakeError) as rejected:
+            await self.client.ws_connect(
+                "/api/sessions/" + identities[4]["id"] + "/audio"
+            )
+        self.assertEqual(rejected.exception.status, 503)
+        await sockets[0].send_json({"type": "authenticate", "token": "wrong"})
+        await sockets[0].receive()
+        replacement = await self.client.ws_connect(
+            "/api/sessions/" + identities[4]["id"] + "/audio"
+        )
+        sockets[0] = replacement
+        identities[0] = identities[4]
+        await asyncio.gather(
+            *(
+                ws.send_json({"type": "authenticate", "token": item["token"]})
+                for ws, item in zip(sockets, identities)
+            )
+        )
+        states = await asyncio.gather(*(ws.receive_json() for ws in sockets))
+        self.assertEqual(len(states), 4)
+        # Replacing an admitted session keeps its slot and cannot close a newer socket.
+        updated = await self.client.ws_connect(
+            "/api/sessions/" + identities[0]["id"] + "/audio"
+        )
+        await updated.send_json(
+            {"type": "authenticate", "token": identities[0]["token"]}
+        )
+        self.assertTrue((await updated.receive_json())["connected"])
+        await updated.send_json({"type": "ping"})
+        self.assertEqual((await updated.receive_json())["type"], "pong")
+        await updated.close()
+        for ws in sockets:
+            await ws.close()

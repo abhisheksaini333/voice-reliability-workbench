@@ -43,6 +43,7 @@ class Workspace:
         self.allow_faults = allow_faults
         self.engines = {}
         self.sockets = {}
+        self.pending = {}
         self.healthy = True
 
     def engine(self, session_id):
@@ -258,53 +259,69 @@ def create_app(
         record = runtime.store.session(identity)
         if record is None:
             raise web.HTTPNotFound()
-        if identity not in runtime.sockets and len(runtime.sockets) >= 4:
+        occupied = set(runtime.sockets) | set(runtime.pending)
+        if identity in runtime.pending or (
+            identity not in occupied and len(occupied) >= 4
+        ):
             raise web.HTTPServiceUnavailable()
-        ws = web.WebSocketResponse(max_msg_size=4096, heartbeat=20, receive_timeout=90)
-        await ws.prepare(request)
+        reservation = object()
+        runtime.pending[identity] = reservation
         try:
-            message = await asyncio.wait_for(ws.receive(), 3)
-            auth = json.loads(message.data) if message.type == WSMsgType.TEXT else None
-            if (
-                not isinstance(auth, dict)
-                or set(auth) != {"type", "token"}
-                or auth["type"] != "authenticate"
-                or not isinstance(auth["token"], str)
-                or len(auth["token"]) > 128
-                or not hmac.compare_digest(record["token_hash"], digest(auth["token"]))
-            ):
-                raise ValueError("invalid authentication")
-        except (ValueError, TypeError, asyncio.TimeoutError):
-            await ws.close(code=1008, message=b"authentication required")
-            return ws
-        engine = runtime.engine(identity)
-        if not engine.healthy or engine.state.phase == "closed":
-            await ws.close(code=1008, message=b"session unavailable")
-            return ws
-        previous = runtime.sockets.get(identity)
-        if previous is not None:
-            await previous.close(code=1000, message=b"connection replaced")
-        runtime.sockets[identity] = ws
-        incoming, outgoing = asyncio.Queue(maxsize=50), asyncio.Queue(maxsize=16)
-
-        async def emit(event):
-            if ws.closed:
-                raise SlowConsumer("connection is closed")
+            ws = web.WebSocketResponse(
+                max_msg_size=4096, heartbeat=20, receive_timeout=90
+            )
+            await ws.prepare(request)
             try:
-                outgoing.put_nowait(event)
-            except asyncio.QueueFull:
-                await ws.close(code=1013, message=b"output overflow")
-                raise SlowConsumer("output overflow")
+                message = await asyncio.wait_for(ws.receive(), 3)
+                auth = (
+                    json.loads(message.data) if message.type == WSMsgType.TEXT else None
+                )
+                if (
+                    not isinstance(auth, dict)
+                    or set(auth) != {"type", "token"}
+                    or auth["type"] != "authenticate"
+                    or not isinstance(auth["token"], str)
+                    or len(auth["token"]) > 128
+                    or not hmac.compare_digest(
+                        record["token_hash"], digest(auth["token"])
+                    )
+                ):
+                    raise ValueError("invalid authentication")
+            except (ValueError, TypeError, asyncio.TimeoutError):
+                await ws.close(code=1008, message=b"authentication required")
+                return ws
+            engine = runtime.engine(identity)
+            if not engine.healthy or engine.state.phase == "closed":
+                await ws.close(code=1008, message=b"session unavailable")
+                return ws
+            previous = runtime.sockets.get(identity)
+            if previous is not None:
+                await previous.close(code=1000, message=b"connection replaced")
+            runtime.sockets[identity] = ws
+            incoming, outgoing = asyncio.Queue(maxsize=50), asyncio.Queue(maxsize=16)
 
-        # The old handler completes before replacement, and only this generation
-        # may mutate live state or disconnect the engine.
-        engine.emit = discard
-        try:
-            connection = await engine.connect(emit)
-        except Exception:
-            runtime.sockets.pop(identity, None)
-            await ws.close(code=1011, message=b"workspace unavailable")
-            return ws
+            async def emit(event):
+                if ws.closed:
+                    raise SlowConsumer("connection is closed")
+                try:
+                    outgoing.put_nowait(event)
+                except asyncio.QueueFull:
+                    await ws.close(code=1013, message=b"output overflow")
+                    raise SlowConsumer("output overflow")
+
+            # The old handler completes before replacement, and only this generation
+            # may mutate live state or disconnect the engine.
+            engine.emit = discard
+            try:
+                connection = await engine.connect(emit)
+            except Exception:
+                if runtime.sockets.get(identity) is ws:
+                    runtime.sockets.pop(identity, None)
+                await ws.close(code=1011, message=b"workspace unavailable")
+                return ws
+        finally:
+            if runtime.pending.get(identity) is reservation:
+                runtime.pending.pop(identity, None)
 
         async def send():
             while True:
