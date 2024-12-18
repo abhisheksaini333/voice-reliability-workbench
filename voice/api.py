@@ -128,7 +128,7 @@ def create_app(
                 )
             else:
                 response = error
-        except (ValueError, TypeError, KeyError, json.JSONDecodeError):
+        except (ValueError, TypeError, KeyError, RecursionError):
             response = web.json_response({"error": "invalid_request"}, status=400)
         except asyncio.CancelledError:
             raise
@@ -287,7 +287,7 @@ def create_app(
                     )
                 ):
                     raise ValueError("invalid authentication")
-            except (ValueError, TypeError, asyncio.TimeoutError):
+            except (ValueError, TypeError, RecursionError, asyncio.TimeoutError):
                 await ws.close(code=1008, message=b"authentication required")
                 return ws
             engine = runtime.engine(identity)

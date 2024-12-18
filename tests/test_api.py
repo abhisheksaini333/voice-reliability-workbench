@@ -193,3 +193,13 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
         await updated.close()
         for ws in sockets:
             await ws.close()
+
+    async def test_deep_authentication_json_is_rejected_without_poisoning_health(self):
+        ws = await self.client.ws_connect(
+            "/api/sessions/" + self.session["id"] + "/audio"
+        )
+        await ws.send_str("[" * 1100 + "]" * 1100)
+        message = await ws.receive()
+        self.assertEqual(message.type.name, "CLOSE")
+        self.assertEqual(message.data, 1008)
+        self.assertEqual((await self.client.get("/health")).status, 200)
