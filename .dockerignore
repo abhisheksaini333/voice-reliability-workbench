@@ -1,0 +1,17 @@
+.git
+.env
+.env.*
+*.sqlite
+*.sqlite-*
+.data
+models
+.venv
+node_modules
+frontend/node_modules
+frontend/dist
+**/__pycache__
+**/*.pyc
+.pytest_cache
+evidence
+*.log
+.DS_Store

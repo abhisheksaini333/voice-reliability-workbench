@@ -1,0 +1,67 @@
+services:
+  providers:
+    image: voice-reliability-provider:local
+    platform: linux/arm64
+    build:
+      context: .
+      target: provider
+    env_file: ${VOICE_ENV_FILE:-.env}
+    environment:
+      VOICE_WORKSPACE_KEY: ''
+      VOICE_OPERATOR_KEY: ''
+      VOICE_WHISPER_PATH: /models/whisper-tiny.en
+      VOICE_QWEN_PATH: /models/qwen2-0.5b-instruct
+      VOICE_ESPEAK_BINARY: /opt/espeak/bin/espeak-ng
+      HF_HUB_OFFLINE: '1'
+      HF_HOME: /tmp/huggingface
+    volumes:
+      - ${WHISPER_MODEL_DIRECTORY:?Set the verified Whisper model directory}:/models/whisper-tiny.en:ro
+      - ${QWEN_MODEL_DIRECTORY:?Set the verified Qwen model directory}:/models/qwen2-0.5b-instruct:ro
+    networks: [providers]
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 2
+    mem_limit: 4g
+    pids_limit: 128
+    init: true
+    restart: unless-stopped
+
+  workbench:
+    image: voice-reliability-workbench:local
+    platform: linux/arm64
+    build:
+      context: .
+      target: workbench
+    env_file: ${VOICE_ENV_FILE:-.env}
+    environment:
+      VOICE_PROVIDER_URL: http://providers:8097
+      VOICE_DATABASE: /data/voice.sqlite
+    volumes:
+      - workspace:/data
+    ports:
+      - '127.0.0.1:${VOICE_HOST_PORT:-8096}:8096'
+    networks: [frontend, providers]
+    depends_on:
+      providers:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 1
+    mem_limit: 512m
+    pids_limit: 64
+    init: true
+    restart: unless-stopped
+
+networks:
+  frontend:
+  providers:
+    internal: true
+
+volumes:
+  workspace:
