@@ -1,0 +1,13 @@
+{
+  "scope": "Actual HTTP/WS and original speech models; real-time project PCM fixtures. This probe does not play audio: it verifies server VAD fencing of actual synthesized output. Browser tests separately verify scheduled-source stopping.",
+  "results": {
+    "first_audio_epoch": 2,
+    "new_speech_epoch": 3,
+    "old_audio_after_stop": 0,
+    "first_chunks": 4,
+    "speech_onset_to_stop_message_ms": 44.43975002504885,
+    "first_turn_state": "cancelled",
+    "model_transcript": "Hello, can you help me with a service issue?",
+    "model_reply": "Of course! Please describe your problem and I'll assist you."
+  }
+}

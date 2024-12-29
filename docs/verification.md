@@ -31,12 +31,30 @@ The browser interruption test reaches actual synthesized playback, interrupts, o
 
 ![Operator handoff review](images/operator-handoff.png)
 
+## Linux ARM execution
+
+The packaged stack passed all three actual Chrome journeys in 39 seconds after the admission and authentication corrections. [Container browser records](../evidence/container-browser.json) preserve completed playback and operator handoff, interruption followed by reconnect, and a delayed provider failure. The interruption test instruments actual `AudioBufferSourceNode.start` and `stop`: scheduled sources stop, the active set becomes empty, and no new source starts during the following 500 ms. The mobile reconnect view has no horizontal overflow at 390 pixels and requires fresh microphone consent.
+
+![Mobile reconnect requiring fresh consent](images/mobile-reconnected.png)
+
+The completed container greeting reported STT 2416 ms, model 8747 ms, synthesis 25 ms, first-audio acknowledgement 11286 ms and total completed playback 15032 ms. The separate interrupted playback reported a 9.03 ms stop acknowledgement. Initial speech-start flush acknowledgements are distinct from this user interruption. These observations came from the same Apple M3 Pro host, with the Linux ARM provider limited to two CPUs and 4 GiB and the workbench to one CPU and 512 MiB. They do not establish throughput or tail latency.
+
+An [automatic speech interruption probe](../evidence/vad-barge-in-container.json) feeds the original PCM fixtures in real time. Once actual synthesis begins, a second spoken fixture triggers VAD, advances the turn epoch and cancels the old turn. Speech onset to the stop message measured 44.44 ms, with zero old-epoch audio afterward. This server probe does not play audio; the browser test above separately verifies that scheduled playback stops. Reproduce it against a configured running stack with `VOICE_WORKSPACE_KEY` set privately:
+
+```sh
+PYTHONPATH=. python scripts/check_barge_in.py --output evidence/local-barge-in.json
+```
+
+[Actual container provider checks](../evidence/container-providers.json) verify original Whisper transcription, Qwen generation and eSpeak output, unauthorized access rejection, deadline failure, and cancellation during actual Qwen inference. The no-delay generation cancellation returned 499 and released the native worker after 155 ms in that observation. Models and inference were real; failure controls deliberately injected delays in the separate deadline scenario.
+
+The final Linux ARM regression run collected 60 Python tests: 58 passed and two direct model-loading tests were skipped. Actual models were exercised separately through the HTTP and browser checks above. Six frontend tests and the strict TypeScript/Vite build also passed. Hosted CI has not been run.
+
 ## Durability and boundaries
 
 [Process recovery evidence](../evidence/process-recovery.json) comes from a real isolated API subprocess killed during VAD speech. Restart preserved one abandoned turn, marked `process_restart`, required fresh consent and verified an online SQLite backup. This exercise did not load models. A separate real WebSocket regression sends200unpaced frames and observes 1013 input-overflow closure.
 
-Regressions cover two-connection SQLite terminal-result races, stale epochs, repeated native-worker cancellation, distinct concurrent reconnect generations, tool duplicate/late-result rejection, redaction, bounded event retention, ordered playback credits, slow/closed listeners, origin rejection and separate operator/session credentials. Actual Pipecat classes participate in the pipeline tests.
+Regressions cover two-connection SQLite terminal-result races, stale epochs, repeated native-worker cancellation, distinct concurrent reconnect generations, tool duplicate/late-result rejection, redaction, bounded event retention, ordered playback credits, slow/closed listeners, origin rejection and separate operator/session credentials. Pending WebSocket authentication counts toward admission; failed authentication releases its reservation without removing an existing session. Actual Pipecat classes participate in the pipeline tests.
 
-The source includes independently audited exact model manifests, a41-package Python runtime and199-package frontend lock. Linux ARM has an additional hash-pinned wheel profile and original eSpeak source build. Container execution results are recorded separately from native measurements when verified. A compiled image alone does not establish an actual-model container result.
+The source includes independently audited exact model manifests, a 41-package Python runtime and 199-package frontend lock. Linux ARM has an additional hash-pinned wheel profile and original eSpeak source build. The container's installed versions, package consistency and actual speech/model execution were verified separately from native measurements.
 
 Energy VAD, synthetic-fixture WER, turn-based TTS, single-worker CPU capacity and local browser transport are deliberate evidence boundaries. No GPU/vLLM, telephone carrier, SIP, PSTN, production traffic or hosted-CI result is claimed.

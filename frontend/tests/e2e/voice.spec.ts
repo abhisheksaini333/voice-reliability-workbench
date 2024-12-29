@@ -93,12 +93,45 @@ test("real microphone worklet completes Pipecat turn and operator takes over con
 test("interruption flushes actual scheduled speech and reconnect requires consent", async ({
   page,
 }, info) => {
+  await page.addInitScript(() => {
+    const observed = {
+      active: new Set<AudioBufferSourceNode>(),
+      starts: 0,
+      stops: 0,
+    };
+    (window as any).__voiceAudio = observed;
+    const start = AudioBufferSourceNode.prototype.start;
+    const stop = AudioBufferSourceNode.prototype.stop;
+    AudioBufferSourceNode.prototype.start = function (...args) {
+      observed.active.add(this);
+      observed.starts++;
+      this.addEventListener("ended", () => observed.active.delete(this));
+      return start.apply(this, args);
+    };
+    AudioBufferSourceNode.prototype.stop = function (...args) {
+      observed.active.delete(this);
+      observed.stops++;
+      return stop.apply(this, args);
+    };
+  });
   const identity = await create(page);
   await page.getByRole("button", { name: "Start microphone" }).click();
   await expect(
     page.getByRole("heading", { name: "A response is playing." })
   ).toBeVisible({ timeout: 60000 });
   await page.getByRole("button", { name: "Interrupt response" }).click();
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__voiceAudio.active.size))
+    .toBe(0);
+  expect(
+    await page.evaluate(() => (window as any).__voiceAudio.stops)
+  ).toBeGreaterThan(0);
+  const starts = await page.evaluate(() => (window as any).__voiceAudio.starts);
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as any).__voiceAudio.starts)).toBe(
+    starts
+  );
+
   await expect
     .poll(async () => (await record(page, identity)).turns[0].state)
     .toBe("cancelled");

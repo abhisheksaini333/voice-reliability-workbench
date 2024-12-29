@@ -1,0 +1,166 @@
+{
+  "inference": "Actual original Whisper/Qwen and original eSpeak1.51 in LinuxARM container",
+  "fixture": "Project-owned eSpeak greeting.wav; original transcript retained without edits",
+  "records": {
+    "health": {
+      "status": 200,
+      "body": {
+        "ready": true
+      },
+      "wall_ms": 2.8230410534888506
+    },
+    "unauthorized": {
+      "status": 401,
+      "body": {
+        "error": "unauthorized"
+      },
+      "wall_ms": 2.3402500664815307
+    },
+    "transcription": {
+      "status": 200,
+      "body": {
+        "text": "Hello, can you help me with a service issue?",
+        "generated_tokens": 14,
+        "latency_ms": 1299.7999590588734
+      },
+      "wall_ms": 1324.215666973032
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "text": "Of course! Please describe your problem and I'll assist you.",
+        "input_tokens": 68,
+        "output_tokens": 14,
+        "latency_ms": 3405.195584986359
+      },
+      "wall_ms": 3408.668752061203
+    },
+    "synthesis": {
+      "status": 200,
+      "body": {
+        "sample_rate": 22050,
+        "duration_ms": 3748.8888888888887,
+        "pcm_bytes": 165326
+      },
+      "wall_ms": 41.55141592491418
+    },
+    "timeout": {
+      "status": 504,
+      "body": {
+        "error": "provider_timeout"
+      },
+      "wall_ms": 104.41174998413771
+    },
+    "delayed_cancellation": {
+      "injected_delay_ms": 5000,
+      "active_observations": [
+        {
+          "status": 200,
+          "body": {
+            "active": 0,
+            "stage": null,
+            "cancellation_pending": false,
+            "closing": false
+          },
+          "wall_ms": 1.0317499982193112
+        },
+        {
+          "status": 200,
+          "body": {
+            "active": 1,
+            "stage": "model",
+            "cancellation_pending": false,
+            "closing": false
+          },
+          "wall_ms": 0.6752919871360064
+        }
+      ],
+      "cancel_request": {
+        "status": 200,
+        "body": {
+          "cancellation_requested": true
+        },
+        "wall_ms": 1.7265829956158996
+      },
+      "request_result": {
+        "status": 499,
+        "body": {
+          "error": "cancelled"
+        },
+        "wall_ms": 478.8535420084372
+      },
+      "cancel_to_completed_cleanup_ms": 2.4070420768111944,
+      "final_status": {
+        "status": 200,
+        "body": {
+          "active": 0,
+          "stage": null,
+          "cancellation_pending": false,
+          "closing": false
+        },
+        "wall_ms": 0.9403749136254191
+      }
+    },
+    "actual_inference_cancellation": {
+      "injected_delay_ms": 0,
+      "active_observations": [
+        {
+          "status": 200,
+          "body": {
+            "active": 0,
+            "stage": null,
+            "cancellation_pending": false,
+            "closing": false
+          },
+          "wall_ms": 1.2205829843878746
+        },
+        {
+          "status": 200,
+          "body": {
+            "active": 1,
+            "stage": "model",
+            "cancellation_pending": false,
+            "closing": false
+          },
+          "wall_ms": 1.2978330487385392
+        }
+      ],
+      "cancel_request": {
+        "status": 200,
+        "body": {
+          "cancellation_requested": true
+        },
+        "wall_ms": 1.3270409544929862
+      },
+      "request_result": {
+        "status": 499,
+        "body": {
+          "error": "cancelled"
+        },
+        "wall_ms": 628.8620840059593
+      },
+      "cancel_to_completed_cleanup_ms": 155.39349999744445,
+      "final_status": {
+        "status": 200,
+        "body": {
+          "active": 0,
+          "stage": null,
+          "cancellation_pending": false,
+          "closing": false
+        },
+        "wall_ms": 0.9532910771667957
+      }
+    },
+    "final_status": {
+      "status": 200,
+      "body": {
+        "active": 0,
+        "stage": null,
+        "cancellation_pending": false,
+        "closing": false
+      },
+      "wall_ms": 0.7484579691663384
+    }
+  },
+  "complete": true
+}
