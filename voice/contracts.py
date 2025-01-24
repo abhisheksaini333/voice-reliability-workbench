@@ -59,11 +59,20 @@ class AudioSequence:
         self.frames += 1
 
 
+def _unique_members(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ProtocolError("duplicate control member")
+        result[key] = value
+    return result
+
+
 def parse_control(raw):
     if not isinstance(raw, str) or len(raw) > 4096:
         raise ProtocolError("control message is too large")
     try:
-        message = json.loads(raw)
+        message = json.loads(raw, object_pairs_hook=_unique_members)
     except (ValueError, TypeError, RecursionError) as error:
         raise ProtocolError("invalid control JSON") from error
     if not isinstance(message, dict):
