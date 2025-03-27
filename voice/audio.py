@@ -32,8 +32,11 @@ class VoiceDetector:
         max_frames=600,
     ):
         if (
-            not 0 < threshold < 1
-            or min(attack_frames, silence_frames, preroll_frames) < 1
+            type(threshold) not in (int, float)
+            or not math.isfinite(threshold)
+            or not 0 < threshold < 1
+            or any(type(value) is not int or not 1 <= value <= 1500
+                   for value in (attack_frames, silence_frames, preroll_frames, max_frames))
         ):
             raise ValueError("positive VAD bounds required")
         if not attack_frames <= preroll_frames < max_frames <= 1500:
