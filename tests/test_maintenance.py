@@ -17,3 +17,9 @@ class Maintenance(unittest.TestCase):
         for threshold in (True, '0.02', float('nan'), float('inf')):
             with self.assertRaises(ValueError): VoiceDetector(threshold=threshold)
         self.assertEqual(VoiceDetector().max_frames,600)
+
+    def test_vrw03(self):
+        from voice.provider_contracts import SpeechAudio, ProviderFailure
+        for pcm,rate in (('aa',22050),([0,0],22050),(b'aa',22050.0),(b'aa',True)):
+            with self.assertRaisesRegex(ProviderFailure,'invalid_speech_audio'): SpeechAudio(pcm,rate)
+        self.assertGreater(SpeechAudio(b'aa',22050).duration_ms,0)

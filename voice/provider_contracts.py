@@ -32,7 +32,9 @@ class SpeechAudio:
 
     def __post_init__(self):
         if (
-            self.sample_rate != 22050
+            type(self.sample_rate) is not int
+            or self.sample_rate != 22050
+            or not isinstance(self.pcm, bytes)
             or not self.pcm
             or len(self.pcm) % 2
             or len(self.pcm) > self.sample_rate * 2 * 30
