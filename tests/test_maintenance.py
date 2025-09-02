@@ -23,3 +23,17 @@ class Maintenance(unittest.TestCase):
         for pcm,rate in (('aa',22050),([0,0],22050),(b'aa',22050.0),(b'aa',True)):
             with self.assertRaisesRegex(ProviderFailure,'invalid_speech_audio'): SpeechAudio(pcm,rate)
         self.assertGreater(SpeechAudio(b'aa',22050).duration_ms,0)
+
+    def test_vrw04(self):
+        import asyncio
+        from voice.worker import NativeWorker
+        from voice.provider_contracts import ProviderFailure
+        async def scenario():
+            worker=NativeWorker(); operation=Mock(return_value='done')
+            for timeout in (True,'2',None,float('nan'),float('inf'),0):
+                with self.assertRaisesRegex(ProviderFailure,'invalid_job'):
+                    await worker.run('job','stt',operation,timeout)
+                self.assertIsNone(worker.active)
+            operation.assert_not_called()
+            self.assertEqual(await worker.run('valid','stt',operation,1),'done')
+        asyncio.run(scenario())

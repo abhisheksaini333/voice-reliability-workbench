@@ -3,6 +3,7 @@ import asyncio
 from collections import deque
 from dataclasses import dataclass
 import re
+import math
 import threading
 import time
 from .provider_contracts import ProviderFailure, WorkBudget
@@ -28,7 +29,9 @@ class NativeWorker:
             r"[A-Za-z0-9_-]{1,100}", identity
         ):
             raise ProviderFailure("invalid_job")
-        if stage not in ("stt", "model", "tts") or not 0 < timeout <= 30:
+        if (stage not in ("stt", "model", "tts")
+                or type(timeout) not in (int, float)
+                or not math.isfinite(timeout) or not 0 < timeout <= 30):
             raise ProviderFailure("invalid_job")
         if self.closing:
             raise ProviderFailure("provider_draining")
