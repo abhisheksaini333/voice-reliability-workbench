@@ -37,3 +37,23 @@ class Maintenance(unittest.TestCase):
             operation.assert_not_called()
             self.assertEqual(await worker.run('valid','stt',operation,1),'done')
         asyncio.run(scenario())
+
+    def test_vrw05(self):
+        import asyncio
+        from voice.playback import PlaybackWindow, StaleAudio
+        async def scenario():
+            window=PlaybackWindow()
+            await window.reset(0)
+            self.assertEqual(await window.reserve(0),0)
+            await window.reset(0)
+            self.assertEqual(window.pending,[0])
+            self.assertEqual(await window.reserve(0),1)
+            self.assertFalse(await window.acknowledge(False,0))
+            self.assertFalse(await window.acknowledge(0,False))
+            with self.assertRaises(StaleAudio): await window.reserve(False)
+            with self.assertRaises(StaleAudio): await window.reset(True)
+            await window.reset(1)
+            self.assertEqual(window.pending,[])
+            self.assertEqual(await window.reserve(1),0)
+            with self.assertRaises(StaleAudio): await window.reset(0)
+        asyncio.run(scenario())

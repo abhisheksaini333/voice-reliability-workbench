@@ -23,13 +23,15 @@ class PlaybackWindow:
         self.condition = asyncio.Condition()
 
     def _current(self, epoch):
-        if epoch != self.epoch:
+        if type(epoch) is not int or not 0 <= epoch <= 2**31 - 1 or epoch != self.epoch:
             raise StaleAudio("audio belongs to an invalidated turn")
 
     async def reset(self, epoch):
         async with self.condition:
-            if epoch < self.epoch:
+            if type(epoch) is not int or not 0 <= epoch <= 2**31 - 1 or epoch < self.epoch:
                 raise StaleAudio("cannot restore an old audio epoch")
+            if epoch == self.epoch:
+                return
             self.epoch = epoch
             self.pending.clear()
             self.next_sequence = 0
@@ -58,7 +60,8 @@ class PlaybackWindow:
 
     async def acknowledge(self, epoch, sequence):
         async with self.condition:
-            if epoch != self.epoch or not self.pending or self.pending[0] != sequence:
+            if (type(epoch) is not int or type(sequence) is not int
+                    or epoch != self.epoch or not self.pending or self.pending[0] != sequence):
                 return False
             self.pending.pop(0)
             self.condition.notify_all()
