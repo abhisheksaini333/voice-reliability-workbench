@@ -57,3 +57,14 @@ class Maintenance(unittest.TestCase):
             self.assertEqual(await window.reserve(1),0)
             with self.assertRaises(StaleAudio): await window.reset(0)
         asyncio.run(scenario())
+
+    def test_vrw06(self):
+        from voice.tools import ToolManager, ToolError
+        from voice.state import TurnIdentity
+        identity=TurnIdentity('session',1,1)
+        for timeout,now in ((True,1),('2',1),(float('nan'),1),(1,float('nan')),(1,float('inf'))):
+            manager=ToolManager(lambda identity:True,clock=lambda:now)
+            with self.assertRaises(ToolError): manager.issue(identity,'atlas',timeout)
+            self.assertEqual(manager.receipts,{})
+        manager=ToolManager(lambda identity:True,clock=lambda:10)
+        self.assertEqual(manager.issue(identity,'atlas',2).deadline,12)

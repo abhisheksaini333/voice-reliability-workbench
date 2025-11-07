@@ -2,6 +2,7 @@
 import asyncio
 from dataclasses import asdict, dataclass
 import time
+import math
 from uuid import uuid4
 from .state import TurnIdentity
 
@@ -39,11 +40,14 @@ class ToolManager:
     def issue(self, identity, service, timeout=2):
         if not isinstance(service, str) or service not in {"atlas", "beacon"}:
             raise ToolError("tool is outside the read-only allowlist")
-        if not 0 < timeout <= 10 or not self.is_current(identity):
+        now = self.clock()
+        if (type(timeout) not in (int, float) or not math.isfinite(timeout)
+                or not 0 < timeout <= 10 or type(now) not in (int, float)
+                or not math.isfinite(now) or not self.is_current(identity)):
             raise ToolError("current turn and bounded tool deadline required")
         if len(self.receipts) >= 100:
             raise ToolError("session tool receipt limit reached")
-        receipt = Receipt(uuid4().hex, identity, service, self.clock() + timeout)
+        receipt = Receipt(uuid4().hex, identity, service, now + timeout)
         self.receipts[receipt.id] = receipt
         return receipt
 
