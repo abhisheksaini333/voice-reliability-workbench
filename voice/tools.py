@@ -79,6 +79,12 @@ class ToolManager:
     async def execute(self, receipt, operation=service_status):
         if self.receipts.get(receipt.id) is not receipt or receipt.state != "pending":
             raise ToolError("unissued or already completed receipt")
+        if not self.is_current(receipt.identity):
+            receipt.state = "cancelled"
+            return receipt.snapshot()
+        if self.clock() >= receipt.deadline:
+            receipt.state = "timed_out"
+            return receipt.snapshot()
         try:
             result = await asyncio.wait_for(
                 operation(receipt.service), max(0, receipt.deadline - self.clock())

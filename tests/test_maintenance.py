@@ -68,3 +68,19 @@ class Maintenance(unittest.TestCase):
             self.assertEqual(manager.receipts,{})
         manager=ToolManager(lambda identity:True,clock=lambda:10)
         self.assertEqual(manager.issue(identity,'atlas',2).deadline,12)
+
+    def test_vrw07(self):
+        import asyncio
+        from voice.tools import ToolManager
+        from voice.state import TurnIdentity
+        async def scenario():
+            now=[10]; current=[True]; identity=TurnIdentity('session',1,1)
+            manager=ToolManager(lambda identity:current[0],clock=lambda:now[0])
+            stale=manager.issue(identity,'atlas'); current[0]=False
+            operation=Mock(return_value=None)
+            self.assertEqual((await manager.execute(stale,operation))['state'],'cancelled')
+            operation.assert_not_called()
+            current[0]=True; expired=manager.issue(identity,'atlas'); now[0]=20
+            self.assertEqual((await manager.execute(expired,operation))['state'],'timed_out')
+            operation.assert_not_called()
+        asyncio.run(scenario())
