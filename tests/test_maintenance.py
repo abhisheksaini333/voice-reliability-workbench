@@ -84,3 +84,14 @@ class Maintenance(unittest.TestCase):
             self.assertEqual((await manager.execute(expired,operation))['state'],'timed_out')
             operation.assert_not_called()
         asyncio.run(scenario())
+
+    def test_vrw08(self):
+        from voice.state import SessionState, StateError
+        valid=dict(id='session',connection=1,epoch=3,phase='operator')
+        for key,value in (('id',''),('id',7),('id','bad\nname'),('connection',True),('connection',-1),('epoch',1.5),('phase','unknown'),('phase',[])):
+            with self.assertRaises(StateError): SessionState.restore({**valid,key:value})
+        for value in (None,{},[]):
+            with self.assertRaises(StateError): SessionState.restore(value)
+        restored=SessionState.restore(valid)
+        self.assertFalse(restored.connected); self.assertFalse(restored.recording)
+        self.assertEqual(restored.phase,'operator')

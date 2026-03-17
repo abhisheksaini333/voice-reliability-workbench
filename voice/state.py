@@ -24,6 +24,17 @@ class SessionState:
 
     @classmethod
     def restore(cls, record):
+        if (not isinstance(record, dict)
+                or not isinstance(record.get("id"), str)
+                or not 1 <= len(record["id"]) <= 100
+                or not record["id"].strip()
+                or any(ord(char) < 32 or ord(char) == 127 for char in record["id"])
+                or any(type(record.get(key)) is not int or not 0 <= record[key] <= 2**31 - 1
+                       for key in ("connection", "epoch"))
+                or not isinstance(record.get("phase"), str)
+                or record["phase"] not in {"idle", "listening", "thinking", "speaking",
+                                           "disconnected", "handoff_pending", "operator", "closed"}):
+            raise StateError("invalid stored session metadata")
         state = cls(record["id"])
         state.connection = record["connection"]
         state.epoch = record["epoch"]
