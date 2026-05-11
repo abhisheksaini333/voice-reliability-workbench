@@ -3,6 +3,8 @@ import re
 
 
 def words(text):
+    if not isinstance(text, str) or len(text) > 20000:
+        raise ValueError("evaluation requires at most 20000 text characters")
     tokens = re.findall(r"[a-z0-9]+(?:'[a-z0-9]+)?", text.lower())
     if len(tokens) > 500:
         raise ValueError("evaluation text exceeds 500 words")

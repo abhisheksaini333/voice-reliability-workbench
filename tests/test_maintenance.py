@@ -95,3 +95,10 @@ class Maintenance(unittest.TestCase):
         restored=SessionState.restore(valid)
         self.assertFalse(restored.connected); self.assertFalse(restored.recording)
         self.assertEqual(restored.phase,'operator')
+
+    def test_vrw09(self):
+        from voice.evaluation import words, word_error_rate
+        for value in (None,17,[], 'a'*20001):
+            with self.assertRaises(ValueError): words(value)
+        self.assertEqual(words("It's a test"),["it's",'a','test'])
+        self.assertEqual(word_error_rate('a b','a c')['substitutions'],1)
