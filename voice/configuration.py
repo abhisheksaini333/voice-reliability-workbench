@@ -52,6 +52,8 @@ def write_configuration(output, models, espeak, database, diagnostics):
             created.append(path)
             with os.fdopen(fd, "w") as stream:
                 stream.write(content)
+                stream.flush()
+                os.fsync(stream.fileno())
     except BaseException:
         for path in created:
             path.unlink()

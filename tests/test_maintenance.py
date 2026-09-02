@@ -102,3 +102,24 @@ class Maintenance(unittest.TestCase):
             with self.assertRaises(ValueError): words(value)
         self.assertEqual(words("It's a test"),["it's",'a','test'])
         self.assertEqual(word_error_rate('a b','a c')['substitutions'],1)
+
+    def test_vrw10(self):
+        from voice.configuration import write_configuration
+        with tempfile.TemporaryDirectory() as root:
+            output=pathlib.Path(root)/'private.env'
+            for failure in (1,2):
+                calls=[0]
+                def sync(fd):
+                    calls[0]+=1
+                    if calls[0]==failure: raise OSError('storage failure')
+                with patch('voice.configuration.os.fsync',side_effect=sync):
+                    with self.assertRaisesRegex(OSError,'storage failure'):
+                        write_configuration(output,root,root,root,False)
+                self.assertFalse(output.exists()); self.assertFalse(pathlib.Path(str(output)+'.json').exists())
+            with patch('voice.configuration.os.fsync') as sync:
+                write_configuration(output,root,root,root,False)
+                self.assertEqual(sync.call_count,2)
+            self.assertEqual(output.stat().st_mode & 0o777,0o600)
+            original=output.read_bytes()
+            with self.assertRaises(FileExistsError): write_configuration(output,root,root,root,False)
+            self.assertEqual(output.read_bytes(),original)
