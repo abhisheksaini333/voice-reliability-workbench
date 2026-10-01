@@ -35,7 +35,8 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=4 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8097/health', timeout=3)"
 CMD ["python", "-m", "voice.provider_api", "--host", "0.0.0.0", "--port", "8097"]
 
-FROM node:16.16.0-bullseye-slim@sha256:cda7229eb72b7534396e7b58ba5b9f2454aee188317e058cbbf22686e5d07e2f AS frontend
+# Build architecture-independent static assets without emulating the Node runtime.
+FROM --platform=$BUILDPLATFORM node:16.16.0-bullseye-slim@sha256:cda7229eb72b7534396e7b58ba5b9f2454aee188317e058cbbf22686e5d07e2f AS frontend
 WORKDIR /frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund

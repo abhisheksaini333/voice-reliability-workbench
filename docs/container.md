@@ -37,3 +37,5 @@ docker compose --env-file "${VOICE_ENV_FILE:-.env}" stop
 ```
 
 `stop` preserves containers and persistent state. Do not remove the volume when preserving session history. Hosted CI is a separate validation step; local container tests do not imply a hosted run or production deployment.
+
+The frontend build and frontend test container use the Docker builder's native platform. The frontend stage explicitly selects `BUILDPLATFORM`, including when the final workbench image targets Linux ARM64; only generated HTML, CSS and JavaScript cross into the workbench stage. Python, Pipecat and eSpeak retain the audited Linux ARM64 profile. This avoids running Node/Vitest under QEMU while retaining all consent and playback tests.
